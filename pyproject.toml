@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "scrappey_proxy"
+version = "0.1.0"
+description = "Flaresolverr substitute using Scrappey.com"
+authors = ["Anthony RAFFY <anthony.raffy38@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "3.12.4"
+flask = "^3.0.3"
+scrappeycom = "^0.3.8"
+gunicorn = "^22.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
