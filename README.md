@@ -37,7 +37,7 @@
 
 ## Overview
 
-Replaces Flaresolverr by listening to the same port and parsing the requests the same way Flaresolverr would. 
+Replaces Flaresolverr by listening to the same port and parsing the requests the same way Flaresolverr would. (Only GET requests for now)
 Instead of doing all the bypassing work itself, the script simply delegate the task to scrappey.com and returns the necessary cookies and content.
 
 As Cloudflare ``cf_clearance`` cookie is tied to a specific User-Agent and IP address, you need a public working forward proxy (Squid for example) where Scrappey.com requests will be redirected to.
