@@ -33,14 +33,7 @@ scrappey = Scrappey(os.environ["SCRAPPEY_API_KEY"])
 def get_scrappey(request: V1RequestBase):
     logger.info(f"Calling scrappey for URL : {request.url}")
 
-    get_request_result = scrappey.get(
-        {
-            "url": request.url,
-            "proxy": proxy_url,
-            "noDriver": True,
-            "browser": [{"name": "chrome"}],
-        }
-    )
+    get_request_result = scrappey.get({"url": request.url, "proxy": proxy_url})
 
     if (
         "solution" in get_request_result
