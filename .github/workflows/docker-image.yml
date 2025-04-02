@@ -1,6 +1,7 @@
 name: Create and publish a Docker image to Github Packages
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - v*
