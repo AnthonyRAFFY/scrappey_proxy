@@ -15,7 +15,7 @@ PROXY_EXTERNAL_IP = os.environ["PROXY_EXTERNAL_IP"]
 PROXY_EXTERNAL_PORT = os.environ["PROXY_EXTERNAL_PORT"]
 
 proxy_url = f"http://{PROXY_USERNAME}:{PROXY_PASSWORD}@{PROXY_EXTERNAL_IP}:{PROXY_EXTERNAL_PORT}"
-logger.info(f"Using {proxy_url} as scrappey's proxy")
+logger.info(f"Configured public proxy (Used by scrappey.com): {proxy_url}")
 
 
 @dataclass
@@ -29,21 +29,43 @@ class ScrappeyResponse:
 scrappey = Scrappey(os.environ["SCRAPPEY_API_KEY"])
 
 
-# Function which takes a request and forwards it to scrappey
 def get_scrappey(request: V1RequestBase):
-    logger.info(f"Calling scrappey for URL : {request.url}")
+    """Takes a get request and forward it to scrappey"""
+    logger.info(f"Forwarding GET request to Scrappey API: URL={request.url}")
 
-    get_request_result = scrappey.get({"url": request.url, "proxy": proxy_url})
+    request_result = scrappey.get({"url": request.url, "proxy": proxy_url})
 
-    if (
-        "solution" in get_request_result
-        and "response" in get_request_result["solution"]
-    ):
+    success = "solution" in request_result and "response" in request_result["solution"]
+    logger.info(f"Received response from Scrappey: Status={200 if success else 500}")
+
+    if success:
         return ScrappeyResponse(
-            get_request_result["solution"]["response"],
+            request_result["solution"]["response"],
             200,
-            get_request_result["solution"]["cookies"],
-            get_request_result["solution"]["userAgent"],
+            request_result["solution"]["cookies"],
+            request_result["solution"]["userAgent"],
+        )
+    else:
+        return ScrappeyResponse("", 500, [], "")
+
+
+def post_scrappey(request: V1RequestBase):
+    """Takes a post request and forward it to scrappey"""
+    logger.info(f"Forwarding POST request to Scrappey API: URL={request.url}")
+
+    request_result = scrappey.post(
+        {"url": request.url, "postData": request.postData, "proxy": proxy_url}
+    )
+
+    success = "solution" in request_result and "response" in request_result["solution"]
+    logger.info(f"Received response from Scrappey: Status={200 if success else 500}")
+
+    if success:
+        return ScrappeyResponse(
+            request_result["solution"]["response"],
+            200,
+            request_result["solution"]["cookies"],
+            request_result["solution"]["userAgent"],
         )
     else:
         return ScrappeyResponse("", 500, [], "")
