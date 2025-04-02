@@ -12,6 +12,7 @@ CLOUDFLARE_KEYWORDS = [
     "error code: 1020",
     "<title>DDOS-GUARD</title>",
     "cloudflare",
+    "cdn-cgi/challenge-platform",
 ]
 
 CLOUDFLARE_SELECTORS = [
