@@ -1,5 +1,5 @@
 import logging
-from typing import Callable
+from typing import Dict
 
 from scrappey_proxy import utils
 
@@ -72,31 +72,44 @@ class V1ResponseBase(object):
             self.solution = ChallengeResolutionResultT(self.solution)
 
 
-def controller_v1_logic(
-    req: V1RequestBase, get_handler: Callable[[V1RequestBase], V1ResponseBase]
-) -> V1ResponseBase:
-    if req.cmd is None:
-        raise Exception("Request parameter 'cmd' is mandatory.")
+class V1Handler:
+    def __init__(self):
+        pass
 
-    if req.maxTimeout is None or int(req.maxTimeout) < 1:
-        req.maxTimeout = 60000
+    def handle(self, req: V1RequestBase) -> V1ResponseBase:
+        raise NotImplementedError("Subclasses must implement this method")
 
+
+class V1Dispatcher:
+    """Handles routing requests to the appropriate handler"""
+
+    def __init__(self, proxies: Dict[str, str]):
+        self.handlers = {}
+        self.proxies = proxies
+
+    def register_handler(self, cmd: str, handler: V1Handler):
+        self.handlers[cmd] = handler
+
+    def dispatch(self, req: V1RequestBase) -> V1ResponseBase:
+        """Validate and dispatch the request to the appropriate handler"""
+        if req.cmd is None:
+            raise Exception("Request parameter 'cmd' is mandatory.")
+
+        if req.maxTimeout is None or int(req.maxTimeout) < 1:
+            req.maxTimeout = 60000
+
+        handler = self.handlers.get(req.cmd)
+        if handler is None:
+            raise Exception(f"Request parameter 'cmd' = '{req.cmd}' is invalid.")
+
+        return handler.handle(req, self.proxies)
+
+
+def v1_handler(req: V1RequestBase, dispatcher: V1Dispatcher):
     res: V1ResponseBase
-    if req.cmd == "request.get":
-        res = get_handler(req)
-    else:
-        raise Exception(f"Request parameter 'cmd' = '{req.cmd}' is invalid.")
-
-    return res
-
-
-def controller_v1_handler(
-    req: V1RequestBase, get_handler: Callable[[V1RequestBase], V1ResponseBase]
-):
-    res: V1ResponseBase
-    logger.info(f"Incoming request => POST /v1 body: {utils.object_to_dict(req)}")
+    logger.info(f"Incoming request => POST /v1 | body: {utils.object_to_dict(req)}")
     try:
-        res = controller_v1_logic(req, get_handler)
+        res = dispatcher.dispatch(req)
     except Exception as e:
         res = V1ResponseBase({})
         res.__error_500__ = True
