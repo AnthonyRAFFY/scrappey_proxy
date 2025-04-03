@@ -1,4 +1,5 @@
 import logging
+import time
 from typing import Dict
 
 from scrappey_proxy import utils
@@ -106,6 +107,7 @@ class V1Dispatcher:
 
 
 def v1_handler(req: V1RequestBase, dispatcher: V1Dispatcher):
+    start_ts = int(time.time() * 1000)
     res: V1ResponseBase
     logger.info(f"Incoming request => POST /v1 | body: {utils.object_to_dict(req)}")
     try:
@@ -116,5 +118,7 @@ def v1_handler(req: V1RequestBase, dispatcher: V1Dispatcher):
         res.status = STATUS_ERROR
         res.message = f"Error: {e}"
 
+    res.startTimestamp = start_ts
+    res.endTimestamp = int(time.time() * 1000)
     res.version = "3.0.0"
     return res
